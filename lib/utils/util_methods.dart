@@ -1,6 +1,8 @@
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter/material.dart';
+import 'package:toast/toast.dart';
 
-RegExp emailExp = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+RegExp emailExp = RegExp(
+    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 
 bool isValidEmail(String email) {
   if (emailExp.hasMatch(email)) {
@@ -10,10 +12,7 @@ bool isValidEmail(String email) {
   }
 }
 
-void displayToast(String toastMsg){
-  Fluttertoast.showToast(
-      msg: toastMsg,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM
-  );
+void displayToast(String toastMsg, BuildContext context) {
+  Toast.show(
+      toastMsg, context, gravity: Toast.BOTTOM, duration: Toast.LENGTH_LONG);
 }

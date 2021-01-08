@@ -49,7 +49,7 @@ class _SignupPageState extends State<SignupPage> {
           isLoading = false;
 
           WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-            displayToast(state.message);
+            displayToast(state.message, context);
           });
           BlocProvider.of<RegisterBloc>(context).add(RegisterChangesAction());
         }
@@ -147,6 +147,7 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   onRegisterPress() async {
+    FocusScope.of(context).unfocus();
     if (formKey.currentState.validate()) {
       BlocProvider.of<RegisterBloc>(context).add(RegisterPressAction(emailController.text.trim(), passwordController.text.trim(), nameController.text.trim()));
     }

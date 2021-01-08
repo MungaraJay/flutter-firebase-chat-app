@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
             isLoading = false;
 
             WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-              displayToast(state.message);
+              displayToast(state.message, context);
             });
             BlocProvider.of<LoginBloc>(context).add(LoginChangesAction());
           }
@@ -135,6 +135,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   onLoginPress() async {
+    FocusScope.of(context).unfocus();
     if (formKey.currentState.validate()) {
       BlocProvider.of<LoginBloc>(context).add(LoginPressAction(emailController.text.trim(), passwordController.text.trim()));
     }

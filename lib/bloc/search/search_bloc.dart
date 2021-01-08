@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_fire_chat/bloc/search/search_event.dart';
 import 'package:flutter_fire_chat/bloc/search/search_state.dart';
-import 'package:flutter_fire_chat/helpers/prefs.dart';
 import 'package:flutter_fire_chat/services/firestore_service.dart';
 import 'package:flutter_fire_chat/utils/util_constants.dart';
 
@@ -58,7 +57,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       List<String> users = [auth.currentUser.uid, event.receiverUserId];
       String chatRoomId =
           getChatRoomId(auth.currentUser.uid, event.receiverUserId);
-      final currentUserName = await Prefs.userDisplayName;
+      final currentUserName = await auth.currentUser.displayName;
 
       List userDetails = [];
       userDetails.add({
@@ -79,9 +78,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         User_Details: FieldValue.arrayUnion(userDetails),
       };
       await firestoreService.addchatRoom(chatRoom, chatRoomId);
+      print("data : ");
 
       yield SearchChatRoomSuccessful(chatRoomId);
     } catch (e) {
+      print("data : ${e.toString()}");
       yield SearchChatRoomFailure();
     }
   }
