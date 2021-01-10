@@ -11,14 +11,17 @@ class AuthService {
 
   Future signInWithEmailAndPassword(String email, String password) async {
     try {
-      UserCredential credential = await auth.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential credential = await auth.signInWithEmailAndPassword(
+          email: email, password: password);
       print("Email user : ${credential.user}");
 
       final response = await firestoreService.getUserInfo(email);
-      if(response.docs!=null && response.docs.length>0 && response.docs.first!=null){
+      if (response.docs != null &&
+          response.docs.length > 0 &&
+          response.docs.first != null) {
         final item = response.docs.first.data();
         storeUserDataInPrefs(item[User_ID], item[User_Email], item[User_DisplayName]);
-      }else{
+      } else {
         storeUserDataInPrefs(credential.user.uid, credential.user.email, credential.user.displayName);
       }
 
@@ -60,6 +63,8 @@ class AuthService {
     try {
       FacebookLoginResult facebookLoginResult =
           await fbLogin.logIn(['email', 'public_profile']);
+      print("facebookLoginResult : ${facebookLoginResult}");
+      print("facebookLoginResult : ${facebookLoginResult.status}");
       if (facebookLoginResult.status == FacebookLoginStatus.loggedIn) {
         FacebookAccessToken facebookAccessToken =
             facebookLoginResult.accessToken;
@@ -77,12 +82,18 @@ class AuthService {
         if (credential.additionalUserInfo.isNewUser) {
           await firestoreService.addUserInfo(userDetails);
         }
-        storeUserDataInPrefs(credential.user.uid, credential.user.email, credential.user.displayName);
+        storeUserDataInPrefs(credential.user.uid, credential.user.email,
+            credential.user.displayName);
 
         print("Facebook user : ${credential.user}");
         return credential.user;
+      } else if (facebookLoginResult.status ==
+          FacebookLoginStatus.cancelledByUser) {
+        throw Exception('Facebook login cancelled by user!');
+      } else if (facebookLoginResult.status == FacebookLoginStatus.error) {
+        throw Exception(facebookLoginResult.errorMessage);
       } else {
-        return Exception('Facebook login failed!');
+        throw Exception('Facebook login failed!');
       }
     } catch (facebookError) {
       print("FacebookError : ${facebookError}");

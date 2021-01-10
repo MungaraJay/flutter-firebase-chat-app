@@ -42,7 +42,8 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       SearchUpdateQueryAction event) async* {
     try {
       yield SearchChangesState();
-      searchResultSnapshot =
+
+      final searchResultSnapshot =
           await FirestoreService().searchByName(event.searchQuery);
 
       yield SearchQueryUpdateState(event.searchQuery, searchResultSnapshot);
@@ -107,6 +108,8 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   }
 
   getChatRoomId(String a, String b) {
+    a.replaceAll(' ', '');
+    b.replaceAll(' ', '');
     if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
       return "$b\_$a";
     } else {

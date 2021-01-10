@@ -18,6 +18,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       yield* _mapLoginChangeStateToState(event);
     } else if (event is LoginPressAction) {
       yield* _mapLoginPressStateToState(event);
+    } else if (event is FBLoginPressAction) {
+      yield* _mapFBLoginPressStateToState(event);
     }
   }
 
@@ -25,11 +27,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     yield LoginInitState();
   }
 
-  Stream<LoginState> _mapLoginInProgressStateToState(LoginInProgressAction event) async* {
+  Stream<LoginState> _mapLoginInProgressStateToState(
+      LoginInProgressAction event) async* {
     yield LoginInProgressState(event.isLoading);
   }
 
-  Stream<LoginState> _mapLoginChangeStateToState(LoginChangesAction event) async* {
+  Stream<LoginState> _mapLoginChangeStateToState(
+      LoginChangesAction event) async* {
     yield LoginChangesState();
   }
 
@@ -42,20 +46,51 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       yield LoginSuccessState();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
-        yield LoginFailureState("Account already registered with other different credential!!");
+        yield LoginFailureState(
+            "Account already registered with other facebook provider!!");
       } else if (e.code == 'credential-already-in-use') {
         yield LoginFailureState("Credentials are already in use!!");
       } else if (e.code == 'email-already-in-use') {
         yield LoginFailureState("Email already in use!!");
       } else if (e.code == 'network-request-failed') {
-        yield LoginFailureState("Please check your internet connection and try again!!");
+        yield LoginFailureState(
+            "Please check your internet connection and try again!!");
       } else if (e.code == 'wrong-password') {
         yield LoginFailureState("Please enter valid password!!");
       } else {
         yield LoginFailureState("User login failed. Please try again!!");
       }
-    }catch (e) {
+    } catch (e) {
       yield LoginFailureState("User login failed. Please try again!!");
+    }
+  }
+
+  Stream<LoginState> _mapFBLoginPressStateToState(
+      FBLoginPressAction event) async* {
+    yield LoginFBInProgressState(true);
+
+    try {
+      await authService.signInWithFacebook();
+
+      yield LoginFBSuccessState();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'account-exists-with-different-credential') {
+        yield LoginFBFailureState(
+            "Account already registered with other email provider!!");
+      } else if (e.code == 'credential-already-in-use') {
+        yield LoginFBFailureState("Credentials are already in use!!");
+      } else if (e.code == 'email-already-in-use') {
+        yield LoginFBFailureState("Email already in use!!");
+      } else if (e.code == 'network-request-failed') {
+        yield LoginFBFailureState(
+            "Please check your internet connection and try again!!");
+      } else if (e.code == 'wrong-password') {
+        yield LoginFBFailureState("Please enter valid password!!");
+      } else {
+        yield LoginFBFailureState("User login failed. Please try again!!");
+      }
+    } catch (e) {
+      yield LoginFBFailureState("User login failed. Please try again!!");
     }
   }
 }

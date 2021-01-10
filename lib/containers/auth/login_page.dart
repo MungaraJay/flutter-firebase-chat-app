@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_fire_chat/bloc/login/login_bloc.dart';
 import 'package:flutter_fire_chat/bloc/login/login_event.dart';
 import 'package:flutter_fire_chat/bloc/login/login_state.dart';
+import 'package:flutter_fire_chat/utils/util_colors.dart';
+import 'package:flutter_fire_chat/utils/util_images.dart';
 import 'package:flutter_fire_chat/utils/util_methods.dart';
 import 'package:flutter_fire_chat/utils/util_routes.dart';
 import 'package:flutter_fire_chat/utils/util_strings.dart';
@@ -16,6 +18,7 @@ import 'package:flutter_fire_chat/widgets/header_text.dart';
 
 class LoginPage extends StatefulWidget {
   final Function animateToPage;
+
   LoginPage(this.animateToPage);
 
   @override
@@ -27,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   bool isLoading = false;
+  bool isFBLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +50,22 @@ class _LoginPageState extends State<LoginPage> {
             BlocProvider.of<LoginBloc>(context).add(LoginChangesAction());
           } else if (state is LoginFailureState) {
             isLoading = false;
+
+            WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+              displayToast(state.message, context);
+            });
+            BlocProvider.of<LoginBloc>(context).add(LoginChangesAction());
+          } else if (state is LoginFBInProgressState) {
+            isFBLoading = true;
+          } else if (state is LoginFBSuccessState) {
+            isFBLoading = false;
+
+            WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+              Navigator.pushReplacementNamed(context, Route_Home_Screen);
+            });
+            BlocProvider.of<LoginBloc>(context).add(LoginChangesAction());
+          } else if (state is LoginFBFailureState) {
+            isFBLoading = false;
 
             WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
               displayToast(state.message, context);
@@ -106,7 +126,17 @@ class _LoginPageState extends State<LoginPage> {
                     isLoading
                         ? CustomProgressIndicator()
                         : CustomButton(
-                            buttonText: strCapsLogin, onPressed: onLoginPress),
+                            buttonText: strCapsLogin, onPressed: isFBLoading || isLoading ? null : onLoginPress),
+                    const SizedBox(height: 24),
+                    Center(
+                        child: Text("OR",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: darkColor,
+                            ))),
+                    const SizedBox(height: 24),
+                    buildLoginFacebookButton(),
                     const SizedBox(height: 24),
                     Center(
                         child:
@@ -137,7 +167,130 @@ class _LoginPageState extends State<LoginPage> {
   onLoginPress() async {
     FocusScope.of(context).unfocus();
     if (formKey.currentState.validate()) {
-      BlocProvider.of<LoginBloc>(context).add(LoginPressAction(emailController.text.trim(), passwordController.text.trim()));
+      BlocProvider.of<LoginBloc>(context).add(LoginPressAction(
+          emailController.text.trim(), passwordController.text.trim()));
     }
+  }
+
+  onFBPress() async {
+    FocusScope.of(context).unfocus();
+    BlocProvider.of<LoginBloc>(context).add(FBLoginPressAction());
+  }
+
+  Widget buildLoginFacebookButton() {
+    return Center(
+      child: UnconstrainedBox(
+        child: Container(
+          height: 50,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                authFBButtonGradientStartColor,
+                authFBButtonGradientEndColor
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.circular(50),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: authFBButtonGradientStartColor,
+                offset: Offset(1.0, 5.0),
+                blurRadius: 5.0,
+              ),
+              BoxShadow(
+                color: authFBButtonGradientEndColor,
+                offset: Offset(1.0, 5.0),
+                blurRadius: 5.0,
+              ),
+            ],
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(50),
+            onTap: () {
+              if(!isFBLoading && !isLoading){
+                onFBPress();
+              }
+            },
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16),
+                child: Row(
+                  children: [
+                    Image.asset(fbImage,
+                        height: 24, width: 24, fit: BoxFit.cover),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Text(strLoginFB, style: ButtonTextStyle()),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // return GestureDetector(
+    //   onTap: () async {},
+    //   child: Align(
+    //     alignment: Alignment.centerRight,
+    //     child: isFBLoading
+    //         ? Container(
+    //         margin: EdgeInsets.only(right: 20, top: 10, bottom: 10),
+    //         height: 50,
+    //         // width: 200,
+    //         child: Center(child: CircularProgressIndicator()))
+    //         : Container(
+    //       height: 50,
+    //       width: double.maxFinite,
+    //       // width: 200,
+    //       decoration: BoxDecoration(
+    //         color: authFBButtonGradientEndColor,
+    //         shape: BoxShape.rectangle,
+    //         borderRadius: BorderRadius.circular(50),
+    //         boxShadow: <BoxShadow>[
+    //           BoxShadow(
+    //             color: authFBButtonGradientStartColor,
+    //             offset: Offset(1.0, 5.0),
+    //             blurRadius: 5.0,
+    //           ),
+    //           BoxShadow(
+    //             color: authFBButtonGradientEndColor,
+    //             offset: Offset(1.0, 5.0),
+    //             blurRadius: 5.0,
+    //           ),
+    //         ],
+    //         gradient: LinearGradient(
+    //             colors: [
+    //               authFBButtonGradientEndColor,
+    //               authFBButtonGradientStartColor,
+    //             ],
+    //             begin: Alignment.topLeft,
+    //             end: Alignment.bottomRight,
+    //             stops: [0.0, 0.4],
+    //             tileMode: TileMode.clamp),
+    //       ),
+    //       alignment: Alignment.center,
+    //       margin: EdgeInsets.only(right: 20, top: 10, bottom: 10),
+    //       child: Row(
+    //         mainAxisAlignment: MainAxisAlignment.center,
+    //         children: <Widget>[
+    //           Image.asset(fbImage,
+    //               height: 24, width: 24, fit: BoxFit.contain),
+    //           Expanded(
+    //             child: Text(strLoginFB,
+    //                 style: TextStyle(
+    //                     color: lightColor,
+    //                     fontSize: 18,
+    //                     fontWeight: FontWeight.w500)),
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 }

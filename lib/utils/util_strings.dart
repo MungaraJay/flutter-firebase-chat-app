@@ -17,6 +17,7 @@ const String strChats = 'Chats';
 const String strNoChats = 'No chats found.';
 const String strUsers = 'Users';
 const String strNoUsers = 'No users found.';
+const String strLoginFB = 'LOGIN USING FACEBOOK';
 
 
 

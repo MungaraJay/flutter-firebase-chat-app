@@ -15,3 +15,5 @@ const SuccessColor = Colors.green;
 const lightColor = Colors.white;
 const darkColor = Colors.black;
 const Color colorScaffoldBG = Color(0xffece9e6);
+const Color authFBButtonGradientStartColor = Colors.indigo;
+const Color authFBButtonGradientEndColor = Colors.blueAccent;
